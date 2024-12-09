@@ -1,0 +1,5 @@
+# Ignore .idea folder (IDE settings)
+.idea/
+
+# Ignore workspace.xql file
+workspace.xql
