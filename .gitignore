@@ -3,3 +3,6 @@
 
 # Ignore workspace.xql file
 workspace.xql
+
+# Ignore requirements.txt file
+requirements.txt

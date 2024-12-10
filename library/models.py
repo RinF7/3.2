@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class Publisher(models.Model):
     name = models.CharField(max_length=100)
@@ -18,6 +19,7 @@ class Author(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -25,8 +27,17 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def clean(self):
+        same_month_categories = Category.objects.filter(
+            created_at__month=self.created_at.month,
+            created_at__year=self.created_at.year,
+            name=self.name
+        )
+        if same_month_categories.exists():
+            raise ValidationError(f"Category '{self.name}' already exists for this month.")
+
 class Book(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique_for_date='publication_date')
     publication_date = models.DateField()
     author = models.OneToOneField(Author, on_delete=models.CASCADE)
     publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE, related_name='book_list', default=1)
@@ -37,7 +48,6 @@ class Book(models.Model):
         verbose_name = "Book"
         verbose_name_plural = "Books"
         ordering = ['publication_date']
-        unique_together = ['publication_date', 'category']
 
     def __str__(self):
         return self.title
